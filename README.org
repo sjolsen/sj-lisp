@@ -1,0 +1,5 @@
+* General-purpose Common Lisp utilities
+
+  These tools are meant as an incremental extension to the facilities defined by ANSI Common Lisp.
+
+  This code is under the MIT license, so you can use it more or less however you wish. If you find a bug in the code, have a feature suggestion, or just want to complain about how stupidly I've done something, please let me know. Ideally, the code here would be bug-free, fast, and portable, but it is /rather/ unlikely to meet all of these requirements at a first pass, so don't take it for granted that any of these holds. Bug fixes and test cases are especially welcome.
