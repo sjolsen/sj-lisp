@@ -47,16 +47,12 @@
       (get-setf-expansion place1 env)
     (multiple-value-bind (vars2 vals2 store-vars2 writer-form2 reader-form2)
         (get-setf-expansion place2 env)
-      (let ((tmp-values (loop
-                           repeat (length store-vars1)
-                           collecting (gensym))))
-        `(let (,@(mapcar #'list vars1 vals1)
-               ,@(mapcar #'list vars2 vals2))
-           (multiple-value-bind ,tmp-values ,reader-form1
-             (multiple-value-bind ,store-vars1 ,reader-form2
-               (multiple-value-bind ,store-vars2 (values ,@tmp-values)
-                 ,writer-form1
-                 ,writer-form2
-                 ,(if second-value
-                      `(values ,@store-vars2)
-                      `(values ,@store-vars1))))))))))
+      `(let (,@(mapcar #'list vars1 vals1)
+             ,@(mapcar #'list vars2 vals2))
+         (multiple-value-bind ,store-vars2 ,reader-form1
+           (multiple-value-bind ,store-vars1 ,reader-form2
+             ,writer-form1
+             ,writer-form2
+             ,(if second-value
+                  `(values ,@store-vars2)
+                  `(values ,@store-vars1))))))))
