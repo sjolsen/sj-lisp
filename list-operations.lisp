@@ -27,7 +27,7 @@
 ;;;            (COPY-LIST (LAST LIST N)))
 ;;;
 ;;; but again, probably faster. See also NSPLIT-LIST.
-(defun split-list (list &optional (n 1) &key from-end)
+(defun split-list (list &optional (n 1) from-end)
   (declare (type list list)
            (type (integer 0 #.most-positive-fixnum) n))
   (let ((forward-n
@@ -42,22 +42,17 @@
                                (copy-list head-cursor))))))
 
 ;;; The mutating, non-consing version of SPLIT-LIST.
-(defun nsplit-list (list &optional (n 1) &key from-end)
+(defun nsplit-list (list &optional (n 1) from-end)
   (declare (type list list)
            (type (integer 0 #.most-positive-fixnum) n))
-  (labels ((split-front (list n) ;; Break off and return the second list
-             (if (zerop n)
-                 list
-                 (exchangef (cdr (nthcdr (1- n) list)) nil)))
-           (split-back (list n) ;; Same
-             (loop
-                for head-cursor on list
-                for tail-cursor on (nthcdr n list)
-                when (not (consp (cdr tail-cursor)))
-                do (return (exchangef (cdr head-cursor) nil)))))
-    (let ((second-list
-           (if from-end
-               (split-back list n)
-               (split-front list n))))
-      (values (if (eq list second-list) nil list)
-              second-list))))
+  (let ((forward-n
+         (if from-end
+             (- (length list) n)
+             n)))
+    (if (zerop forward-n)
+        (values list nil)
+        (loop
+           for head-cursor on list
+           repeat (1- forward-n)
+           finally (return (values list
+                                   (exchangef (cdr head-cursor) nil)))))))
