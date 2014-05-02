@@ -30,19 +30,16 @@
 (defun split-list (list &optional (n 1) &key from-end)
   (declare (type list list)
            (type (integer 0 #.most-positive-fixnum) n))
-  (if from-end
-      (loop
-         for head-cursor on list
-         for tail-cursor on (nthcdr n list)
-         collecting (car head-cursor) into first-list
-         finally (return (values first-list
-                                 (copy-list head-cursor))))
-      (loop
-         for head-cursor on list
-         for i from 1 to n
-         collecting (car head-cursor) into first-list
-         finally (return (values first-list
-                                 (copy-list head-cursor))))))
+  (let ((forward-n
+         (if from-end
+             (- (length list) n)
+             n)))
+    (loop
+       for head-cursor on list
+       repeat forward-n
+       collecting (car head-cursor) into first-list
+       finally (return (values first-list
+                               (copy-list head-cursor))))))
 
 ;;; The mutating, non-consing version of SPLIT-LIST.
 (defun nsplit-list (list &optional (n 1) &key from-end)
