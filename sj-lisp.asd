@@ -2,7 +2,10 @@
 
 (defpackage :sj-lisp
   (:use :cl)
-  (:export ;; setf-macros
+  (:export ;; helper-macros
+           #:fbind
+           #:with-hygienic-names
+           ;; setf-macros
            #:exchangef
            #:swapf
            ;; list-operations
@@ -12,6 +15,7 @@
 (asdf:defsystem :sj-lisp
   :description "General-purpose Common Lisp utilities"
   :author "Stuart Olsen <stuart@sj-olsen.com>"
-  :components ((:file "setf-macros")
+  :components ((:file "helper-macros")
+               (:file "setf-macros")
                (:file "list-operations"
                       :depends-on ("setf-macros"))))
