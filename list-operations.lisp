@@ -28,6 +28,7 @@
 ;;;
 ;;; but again, probably faster. See also NSPLIT-LIST.
 (defun split-list (list &optional (n 1) from-end)
+  "Split LIST at the supplied point, copying. See also NSPLIT-LIST."
   (declare (type list list)
            (type (integer 0 #.most-positive-fixnum) n))
   (let ((forward-n
@@ -43,6 +44,7 @@
 
 ;;; The mutating, non-consing version of SPLIT-LIST.
 (defun nsplit-list (list &optional (n 1) from-end)
+  "Mutatively split LIST at the supplied point. See also SPLIT-LIST."
   (declare (type list list)
            (type (integer 0 #.most-positive-fixnum) n))
   (let ((forward-n
