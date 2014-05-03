@@ -38,11 +38,13 @@
 ;;;              (A 3) (B 4))
 ;;;          (SWAPF (VALUES X Y) (VALUES A B)))))
 ;;;
-;;; The SECOND-VALUE option exists because swapping the order of the arguments
-;;; can affect the assigned values. Better that it be done here than that the
-;;; whole macro be reimplemented with a one-character difference.
+;;; The new value of the first place is returned. The SECOND-VALUE option exists
+;;; because swapping the order of the arguments can affect the assigned
+;;; values. Better that it be done here than that the whole macro be
+;;; reimplemented with a one-character difference.
 (defmacro swapf (place1 place2 &key second-value &environment env)
-  "Swap the values of the two places, returning the first place's new value"
+  "Swap the values of the two places, returning the first place's new value, or
+the second's if so specified."
   (multiple-value-bind (vars1 vals1 store-vars1 writer-form1 reader-form1)
       (get-setf-expansion place1 env)
     (multiple-value-bind (vars2 vals2 store-vars2 writer-form2 reader-form2)
