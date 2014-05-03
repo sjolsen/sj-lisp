@@ -7,6 +7,11 @@
 ;;;;
 ;;;;    (MAPCAR (BIND #'POSITION :2 '(1 2 3 2 1) :FROM-END T) '(1 2 3))
 ;;;;    => (4 3 2)
+;;;
+;;;; FIXME?: BIND searches for bindings in a fairly inefficient way (O(n²) in
+;;;; the number of supplied arguments), but hey, it's just a macro, and the
+;;;; likelihood of a use of the macro being long enough to make any sort of
+;;;; difference is small.
 
 (in-package :sj-lisp)
 
@@ -78,8 +83,7 @@ as the name suggests, keyed, specifically by position, starting from 1."
            for position = (keyword->index position-keyword)
            maximizing position into greatest-position
            collecting (cons position arg-form) into bindings
-           finally (return (values (sort bindings #'< :key #'car)
-                                   greatest-position)))
+           finally (return (values bindings greatest-position)))
       (multiple-value-bind (lambda-list arg-forms)
           (loop
              for i from 1 to greatest-position
