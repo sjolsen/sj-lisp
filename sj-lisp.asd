@@ -5,6 +5,7 @@
   (:export ;; helper-macros
            #:fbind
            #:with-hygienic-names
+           #:bind
            ;; setf-macros
            #:exchangef
            #:swapf
