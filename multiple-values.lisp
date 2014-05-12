@@ -41,6 +41,17 @@ invocation of FUNC."
 
 ;;;; Macros MULTIPLE-VALUE-LET*, MULTIPLE-VALUE-LET
 
+;;; Helper for MULTIPLE-VALUE-LET(*).
+(defun destructure-mvl-binding (binding)
+  "Returns the variables and associated values-form described by BINDING."
+  (cond ((listp binding)
+         (nsplit-list binding 1 t))
+        ((symbolp binding)
+         (values (list binding) nil))
+        (t (error 'type-error
+                  :expected-type '(or list symbol)
+                  :datum binding))))
+
 ;;; Bind the variables listed sequentially. Each binding consists of a list; the
 ;;; last element is the form from which the values will be derived, and the rest
 ;;; are the variables to be bound. For example:
@@ -61,20 +72,18 @@ invocation of FUNC."
 ;;;           (Y (+ X 2)))
 ;;;      (* X Y))
 ;;;
-;;; Uninitialized bindings are not supported, because the general case would be
-;;; ambiguous; consider the following:
+;;; Uninitialized bindings are supported using the same convetion as LET*:
 ;;;
-;;;      (MULTIPLE-VALUE-LET* ((A B C))
-;;;        A))
-;;;
-;;; Should this evaluate to NIL or the value of C?
+;;;    (MULTIPLE-VALUE-LET* (A (B C (VALUES 1 2)) D)
+;;;      (LIST A B C D))
+;;;    => (NIL 1 2 NIL)
 ;;;
 ;;; See also MULTIPLE-VALUE-LET.
 (defmacro multiple-value-let* ((&rest bindings) &body body)
   "Bind the specified variables to the specified values sequentially."
   (if bindings
       (multiple-value-bind (bound-variables values-form)
-          (nsplit-list (first bindings) 1 t)
+          (destructure-mvl-binding (first bindings))
         `(multiple-value-bind ,bound-variables ,(car values-form)
            (multiple-value-let* ,(rest bindings)
              ,@body)))
@@ -84,19 +93,19 @@ invocation of FUNC."
 ;;; syntax and restrictions described for MULTIPLE-VALUE-LET* apply here as well.
 (defmacro multiple-value-let ((&rest bindings) &body body)
   "Bind the specified variables to the specified values in parallel."
-  (labels ((destructure-binding (binding)
+  (labels ((destructure-binding-extra (binding)
              ;; Returns a list of temporary variables for the binding; a list of
              ;; the bound variables specified by the binding; and the form to
              ;; evaluate for the binding
              (multiple-value-bind (bound-variables values-form)
-                 (nsplit-list binding 1 t)
+                 (destructure-mvl-binding binding)
                (values (mapcar (lambda (symbol)
                                  (gensym (symbol-name symbol)))
                                bound-variables)
                        bound-variables
                        values-form))))
     (multiple-value-bind (temporary-names bound-variables values-forms)
-        (multiple-value-mapcar 3 #'destructure-binding bindings)
+        (multiple-value-mapcar 3 #'destructure-binding-extra bindings)
       `(multiple-value-let* ,(mapcar #'append temporary-names values-forms)
          (let ,(mapcar #'list (apply #'append bound-variables) (apply #'append temporary-names))
            ,@body)))))
