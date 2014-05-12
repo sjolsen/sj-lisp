@@ -11,7 +11,11 @@
            #:swapf
            ;; list-operations
            #:split-list
-           #:nsplit-list))
+           #:nsplit-list
+           ;; multiple-values
+           #:multiple-value-mapcar
+           #:multiple-value-let*
+           #:multiple-value-let))
 
 (asdf:defsystem :sj-lisp
   :description "General-purpose Common Lisp utilities"
@@ -19,4 +23,6 @@
   :components ((:file "helper-macros")
                (:file "setf-macros")
                (:file "list-operations"
-                      :depends-on ("setf-macros"))))
+                      :depends-on ("setf-macros"))
+               (:file "multiple-values"
+                      :depends-on ("list-operations"))))
