@@ -15,6 +15,25 @@
 
 (in-package :sj-lisp)
 
+;;; Form walker for replacing names in macros
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun replace-names (names form rule)
+    "Replace the names in FORM according to the symbol transformer RULE."
+    (let ((name-alist
+           (loop
+              for name in names
+              for new-name = (funcall rule name)
+              collecting (cons name new-name))))
+      (labels ((do-replace (form)
+                 (cond ((consp form)
+                        (cons (do-replace (car form))
+                              (do-replace (cdr form))))
+                       ((symbolp form)
+                        (let ((new-name (assoc form name-alist)))
+                          (or (cdr new-name) form)))
+                       (t form))))
+        (do-replace form)))))
+
 
 ;;;; Macro FBIND
 
@@ -37,23 +56,11 @@
 ;;; binding each name's value to a gensym, it walks the body, replacing the
 ;;; names.
 (defmacro with-hygienic-names ((&rest names) &body body)
-  "Sanitizes the body by replacing each instance of each given NAME with a
-unique symbol."
-  (labels ((replace-names (form name-alist)
-             (cond ((consp form)
-                    (cons (replace-names (car form) name-alist)
-                          (replace-names (cdr form) name-alist)))
-                   ((symbolp form)
-                    (let ((new-name (assoc form name-alist)))
-                      (or (cdr new-name) form)))
-                   (t form))))
-    (let ((name-alist
-           (loop
-              for name in names
-              for new-name = (gensym (symbol-name name))
-              collecting (cons name new-name))))
-      `(progn
-         ,@(replace-names body name-alist)))))
+  "Sanitize the BODY by replacing each instance of each given NAME with a unique
+symbol."
+  `(progn
+     ,@(replace-names names body (lambda (name)
+                                   (gensym (symbol-name name))))))
 
 
 ;;;; Macro BIND
