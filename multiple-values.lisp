@@ -45,7 +45,7 @@ invocation of FUNC."
 (defun destructure-mvl-binding (binding)
   "Returns the variables and associated values-form described by BINDING."
   (cond ((listp binding)
-         (nsplit-list binding 1 t))
+         (split-list binding 1 t))
         ((symbolp binding)
          (values (list binding) nil))
         (t (error 'type-error
