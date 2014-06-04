@@ -8,6 +8,7 @@
            #:bind
            ;; setf-macros
            #:exchangef
+           #:exchangef/changed
            #:swapf
            ;; list-operations
            #:split-list

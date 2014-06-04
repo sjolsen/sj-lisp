@@ -11,7 +11,7 @@
 ;;; Essentially the same as single-place SETF, but return the _old_ value rather
 ;;; than the new one. Especially useful for breaking apart lists.
 (defmacro exchangef (place value &environment env)
-  "Assign value to place, returning place's previous value"
+  "Assign VALUE to PLACE, returning PLACE's previous values"
   (multiple-value-bind (vars vals store-vars writer-form reader-form)
       (get-setf-expansion place env)
     (let ((old-values (loop
@@ -22,6 +22,29 @@
            (multiple-value-bind ,store-vars ,value
              ,writer-form
              (values ,@old-values)))))))
+
+
+;;;; Macro EXCHANGEF/CHANGED
+
+;;; The same as EXCHANGEF, but return as the second value whether the primary
+;;; value was changed according to TEST. As a result of this, only the first
+;;; primary value is returned (EXCHANGEF returns all primary values via VALUES).
+(defmacro exchangef/changed (place value &key (test '#'eq) &environment env)
+  "Assign VALUE to PLACE, returning PLACE's previous value and whether that
+value changed according to TEST."
+  (multiple-value-bind (vars vals store-vars writer-form reader-form)
+      (get-setf-expansion place env)
+    (let ((old-values (loop
+                         repeat (length store-vars)
+                         collecting (gensym))))
+      `(let ,(mapcar #'list vars vals)
+         (multiple-value-bind ,old-values ,reader-form
+           (multiple-value-bind ,store-vars ,value
+             ,writer-form
+             (values ,(first store-vars)
+                     (not (funcall ,test
+                                   ,(first old-values)
+                                   ,(first store-vars))))))))))
 
 
 ;;;; Macro SWAPF
