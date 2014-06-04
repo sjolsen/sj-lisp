@@ -1,6 +1,8 @@
 ;;;; Copyright © 2014 Stuart J. Olsen. See file "LICENSE."
 ;;;
 ;;;; Macros and functions to flesh out support for multiple values.
+;;;
+;;;; FIXME: Make declarations work with MULTIPLE-VALUE-LET(*)
 
 (in-package :sj-lisp)
 
