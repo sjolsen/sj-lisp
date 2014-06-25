@@ -9,6 +9,7 @@
            ;; setf-macros
            #:exchangef
            #:exchangef/changed
+           #:setf->changed
            #:swapf
            ;; list-operations
            #:split-list

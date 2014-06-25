@@ -47,6 +47,14 @@ value changed according to TEST."
                                    ,(first store-vars))))))))))
 
 
+;;;; Macro SETF->CHANGED
+
+;;; Like single-assignment SETF, but returns whether PLACE was changed according
+;;; to TEST.
+(defmacro setf->changed (place value &key (test '#'eq))
+  `(nth-value 1 (exchangef/changed ,place ,value :test ,test)))
+
+
 ;;;; Macro SWAPF
 
 ;;; Exactly what it says on the tin. The purpose is served by ROTATEF with two
