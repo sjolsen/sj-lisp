@@ -2,6 +2,9 @@
 ;;;
 ;;;; Operations for juggling SETF operations, with a focus on avoiding the
 ;;;; multiple evaluation of places, as much for performance as for correctness.
+;;;
+;;;; TODO: Generalize EXCHANGEF and SWAPF into PLACE-SHIFTF and PLACE-ROTATEF,
+;;;; respectively.
 
 (in-package :sj-lisp)
 
