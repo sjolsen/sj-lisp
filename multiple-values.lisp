@@ -14,7 +14,7 @@
   (loop
      for list in lists
      when (not list)
-     do (return (list nil nil))
+       do (return (list nil nil))
      collecting (car list) into cars
      collecting (cdr list) into cdrs
      finally (return (list cars cdrs))))
@@ -27,6 +27,8 @@
 ;;;
 ;;; The number of multiple values to return is specified to simplify
 ;;; implementation and potentially avoid a lot of consing.
+;;;
+;;; See also MUTLIPLE-VALUE-MAPCAR*.
 (defun multiple-value-mapcar (n func &rest lists)
   "Map FUNC across LISTS, accumulating the first N values returned by each
 invocation of FUNC into N lists based on position."
@@ -38,7 +40,7 @@ invocation of FUNC into N lists based on position."
      do (loop
            for acc-cell on accumulator
            for res-cell = results then (cdr res-cell) ;; Don't stop looping at
-           ;; the end of results
+                                                      ;; the end of results
            do (push (car res-cell) (car acc-cell)))
      finally (return (apply #'values (mapcar #'nreverse accumulator)))))
 
@@ -52,16 +54,8 @@ invocation of FUNC into N lists based on position."
 of FUNC into a single list."
   (loop
      for (args rest-lists) = (unzip-lists lists) then (unzip-lists rest-lists)
-     with newlist-head and newlist-tail
      while args
-     for newitem = (multiple-value-list (apply func args))
-     when newitem
-     do
-       (if newlist-tail
-           (setf (cdr newlist-tail) newitem)
-           (setf newlist-head newitem))
-       (setf newlist-tail (last newitem))
-     finally (return newlist-head)))
+     nconcing (multiple-value-list (apply func args))))
 
 
 ;;;; Macros MULTIPLE-VALUE-LET*, MULTIPLE-VALUE-LET
