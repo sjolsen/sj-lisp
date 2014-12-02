@@ -7,7 +7,17 @@
 (in-package :sj-lisp)
 
 
-;;;; Function MULTIPLE-VALUE-MAPCAR
+;;;; Functions MULTIPLE-VALUE-MAPCAR, MULTIPLE-VALUE-MAPCAR*
+
+;;; Helper for MULTIPLE-VALUE-MAPCAR(*)
+(defun unzip-lists (lists)
+  (loop
+     for list in lists
+     when (not list)
+     do (return (list nil nil))
+     collecting (car list) into cars
+     collecting (cdr list) into cdrs
+     finally (return (list cars cdrs))))
 
 ;;; Acts just like Common Lisp's MAPCAR, except that it collects multiple values
 ;;; from the mapped function. For example:
@@ -19,26 +29,39 @@
 ;;; implementation and potentially avoid a lot of consing.
 (defun multiple-value-mapcar (n func &rest lists)
   "Map FUNC across LISTS, accumulating the first N values returned by each
-invocation of FUNC."
-  (labels ((unzip-lists (lists)
-             (loop
-                for list in lists
-                when (not list)
-                  do (return (list nil nil))
-                collecting (car list) into cars
-                collecting (cdr list) into cdrs
-                finally (return (list cars cdrs)))))
-    (loop
-       with accumulator = (make-list n)
-       for (args rest-lists) = (unzip-lists lists) then (unzip-lists rest-lists)
-       while args
-       for results = (multiple-value-list (apply func args))
-       do (loop
-             for acc-cell on accumulator
-             for res-cell = results then (cdr res-cell) ;; Don't stop looping at
-                                                        ;; the end of results
-             do (push (car res-cell) (car acc-cell)))
-       finally (return (apply #'values (mapcar #'nreverse accumulator))))))
+invocation of FUNC into N lists based on position."
+  (loop
+     with accumulator = (make-list n)
+     for (args rest-lists) = (unzip-lists lists) then (unzip-lists rest-lists)
+     while args
+     for results = (multiple-value-list (apply func args))
+     do (loop
+           for acc-cell on accumulator
+           for res-cell = results then (cdr res-cell) ;; Don't stop looping at
+           ;; the end of results
+           do (push (car res-cell) (car acc-cell)))
+     finally (return (apply #'values (mapcar #'nreverse accumulator)))))
+
+;;; Similar to MULTIPLE-VALUE-MAPCAR, but collects values into a single list
+;;; rather than multiple lists.
+;;;
+;;;    (MULTIPLE-VALUE-MAPCAR* #'TRUNCATE '(12 23 34) '(10 10 10))
+;;;    => (1 2 2 3 3 4)
+(defun multiple-value-mapcar* (func &rest lists)
+  "Map FUNC across LISTS, accumulating the values returned by each invocation
+of FUNC into a single list."
+  (loop
+     for (args rest-lists) = (unzip-lists lists) then (unzip-lists rest-lists)
+     with newlist-head and newlist-tail
+     while args
+     for newitem = (multiple-value-list (apply func args))
+     when newitem
+     do
+       (if newlist-tail
+           (setf (cdr newlist-tail) newitem)
+           (setf newlist-head newitem))
+       (setf newlist-tail (last newitem))
+     finally (return newlist-head)))
 
 
 ;;;; Macros MULTIPLE-VALUE-LET*, MULTIPLE-VALUE-LET

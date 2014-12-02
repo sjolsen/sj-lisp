@@ -16,6 +16,7 @@
            #:nsplit-list
            ;; multiple-values
            #:multiple-value-mapcar
+           #:multiple-value-mapcar*
            #:multiple-value-let*
            #:multiple-value-let))
 
